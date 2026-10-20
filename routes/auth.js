@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/User'); 
 const bcrypt = require('bcryptjs');
-const passport = require('passport'); // <-- Import passport
 
 // ==========================================
 // 1. SIGNUP ROUTE (/api/auth/register)
@@ -33,6 +32,7 @@ router.post('/register', async (req, res) => {
     await newUser.save();
     console.log('✅ New User Registered:', newUser.email);
 
+    // YAHAN UPDATE HUA HAI: Token aur User dono bhej rahe hain
     res.status(201).json({ 
       message: 'User registered successfully', 
       token: 'demo_token_' + newUser._id, 
@@ -91,7 +91,6 @@ router.post('/login', async (req, res) => {
     res.status(500).json({ message: 'Server error during login' });
   }
 });
-
 // ==========================================
 // 3. CHANGE PASSWORD ROUTE (/api/auth/change-password)
 // ==========================================
@@ -99,20 +98,24 @@ router.put('/change-password', async (req, res) => {
   try {
     const { email, currentPassword, newPassword } = req.body;
 
+    // Validation
     if (!email || !currentPassword || !newPassword) {
       return res.status(400).json({ message: 'Please fill all fields' });
     }
 
+    // User find karein
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
 
+    // Current Password check karein
     const isMatch = await bcrypt.compare(currentPassword, user.password);
     if (!isMatch) {
       return res.status(401).json({ message: 'Current password is incorrect' });
     }
 
+    // Naya Password hash karein aur save karein
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(newPassword, salt);
     
@@ -127,21 +130,19 @@ router.put('/change-password', async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
+const passport = require('passport');
 
-// ==========================================
-// 4. GOOGLE OAUTH ROUTES (Optional - Abhi disabled hai)
-// ==========================================
-// Jab aapke paas Google Client ID aur Secret aa jayein, 
-// tab aap in routes ko uncomment kar sakti hain.
-
+// 1. Google Login Route (Frontend se redirect hoga)
 router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
+// 2. Google Callback Route (Google se data wapas aayega)
 router.get('/google/callback', 
-  passport.authenticate('google', { failureRedirect: 'https://frontend-xi-khaki-dv8br60jha.vercel.app/' }),
+  passport.authenticate('google', { failureRedirect: 'https://frontend-xi-khaki-dv8br60jha.vercel.app/login' }),
   (req, res) => {
+    // Yahan aap user ko token denge aur frontend par bhejenge
+    // Abhi ke liye hum frontend par bhej rahe hain with user data
     const user = req.user;
     res.redirect(`https://frontend-xi-khaki-dv8br60jha.vercel.app/dashboard?name=${user.displayName}&email=${user.emails[0].value}`);
   }
 );
-
 module.exports = router;
