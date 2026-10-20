@@ -7,7 +7,7 @@ const app = express();
 
 // CORS: Frontend URL ko allow karein
 app.use(cors({
-  origin: ['https://frontend-git-main-alishba14.vercel.app'], // <-- Yahan frontend URL daalein (deploy ke baad)
+  origin: ['https://frontend-alishba14.vercel.app'], // <-- Yahan frontend URL daalein (deploy ke baad)
   credentials: true
 }));
 app.use(express.json());
