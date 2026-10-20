@@ -4,21 +4,26 @@ const cors = require('cors');
 require('dotenv').config();
 
 const app = express();
-app.use(cors());
+
+// CORS: Frontend URL ko allow karein
+app.use(cors({
+  origin: ['http://localhost:5173', 'https://frontend-xi-khaki-dv8br60jha.vercel.app'], // <-- Yahan frontend URL daalein (deploy ke baad)
+  credentials: true
+}));
 app.use(express.json());
 
-// ===== MongoDB connect =====
+// MongoDB Connect
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => console.log('✅ MongoDB Connected'))
   .catch((err) => console.error('❌ DB Error:', err.message));
 
-// ===== Routes =====
+// Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/orders', require('./routes/order'));
 app.use('/api/admin', require('./routes/admin'));
 
-// Test route
-app.get('/', (req, res) => res.json({ message: '🍕 Cheezious API running' }));
+app.get('/', (req, res) => res.json({ message: '🍕 PAK SMM API running' }));
 
-app.listen(5000, () => console.log('🚀 Server running on 5000'));
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`🚀 Server running on ${PORT}`));

@@ -1,27 +1,34 @@
-const router = require('express').Router();
-const auth = require('../middleware/auth');
-const Order = require('../models/Order');
-const Service = require('../models/Service');
-const User = require('../models/User');
+const express = require('express');
+const router = express.Router();
 
-router.post('/', auth, async (req, res) => {
-  const { serviceId, link, quantity } = req.body;
-  const service = await Service.findById(serviceId);
-  const user = await User.findById(req.user.id);
-  const charge = (service.ratePer1000 / 1000) * quantity;
+let orders = []; // Dummy Database
 
-  if (user.balance < charge) return res.status(400).json({ error: 'Low balance' });
+// Place New Order
+router.post('/', (req, res) => {
+  const { service, link, quantity } = req.body;
 
-  const order = await Order.create({
-    user: user._id, service: service._id, link, quantity, charge
-  });
-  user.balance -= charge;
-  await user.save();
-  res.json(order);
+  if (!service || !link || !quantity) {
+    return res.status(400).json({ message: 'Missing order details' });
+  }
+
+  const newOrder = {
+    id: Date.now(),
+    service,
+    link,
+    quantity,
+    status: 'Pending',
+    createdAt: new Date().toISOString()
+  };
+
+  orders.push(newOrder);
+  console.log('✅ New Order Received:', newOrder);
+
+  res.status(201).json({ message: 'Order placed successfully', orderId: newOrder.id });
 });
 
-router.get('/', auth, async (req, res) => {
-  const orders = await Order.find({ user: req.user.id }).sort('-createdAt');
-  res.json(orders);
+// Get All Orders (History)
+router.get('/', (req, res) => {
+  res.status(200).json(orders);
 });
+
 module.exports = router;
