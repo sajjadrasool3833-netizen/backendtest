@@ -7,7 +7,7 @@ const app = express();
 
 // CORS: Frontend URL ko allow karein
 app.use(cors({
-  origin: ['http://localhost:5173', 'https://frontend-xi-khaki-dv8br60jha.vercel.app'], // <-- Yahan frontend URL daalein (deploy ke baad)
+  origin: ['https://frontend-git-main-alishba14.vercel.app'], // <-- Yahan frontend URL daalein (deploy ke baad)
   credentials: true
 }));
 app.use(express.json());
